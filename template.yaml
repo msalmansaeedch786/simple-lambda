@@ -1,0 +1,46 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Simple Lambda REST API
+Parameters:
+  Environment:
+    Type: String
+    Description: Value for the ENV environment variable.
+    AllowedPattern: '[A-Za-z][A-Za-z0-9]+'
+    Default: dev
+
+Resources:
+  SimpleLambdaFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: Lambda function providing a simple REST API.
+      FunctionName: !Sub 'SimpleLambdaFunction-${Environment}'
+      Handler: simplelambda.lambdaHandler
+      CodeUri: .
+      Runtime: nodejs10.x
+      AutoPublishAlias: live
+      Environment: 
+        Variables:
+          ENV: !Ref Environment
+          LOG_DEBUG: false
+      Events:
+        SimpleLambdaGet:
+          Type: Api
+          Properties:
+            Path: /simplelambda
+            Method: get
+        SimpleLambdaPost:
+          Type: Api
+          Properties:
+            Path: /simplelambda
+            Method: post
+
+Outputs:
+  SimpleLambdaApi:
+    Description: "API Gateway endpoint URL for Prod stage for SimpleLambda function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/simplelambda/"
+  SimpleLambdaFunction:
+    Description: "SimpleLambda Lambda Function ARN"
+    Value: !GetAtt SimpleLambdaFunction.Arn
+  SimpleLambdaFunctionIamRole:
+    Description: "Implicit IAM Role created for SimpleLambdaFunction"
+    Value: !GetAtt SimpleLambdaFunctionRole.Arn

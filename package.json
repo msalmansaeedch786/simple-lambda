@@ -1,0 +1,88 @@
+{
+  "name": "simplelambda",
+  "version": "1.0.0",
+  "description": "Simple REST endpoint that returns the message 'NorthBay Labs is Awesome!' and a timestamp in JSON.",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "author": "NorthBay Labs Team",
+  "license": "MIT",
+  "files": [
+    "simplelambda.js",
+    "libs/*"
+  ],
+  "scripts": {
+    "pretest": "eslint --format table --ignore-path .gitignore .",
+    "lint": "eslint --format table --ignore-path .gitignore .",
+    "test": "mocha tests/unit/",
+    "integration-test": "mocha tests/unit/ tests/integration/",
+    "coverage": "nyc npm run test",
+    "docs": "jsdoc -c docs/jsdoc.json",
+    "sam:build": "sam build --manifest package.json",
+    "sam:package": "cross-var sam package --s3-bucket $npm_package_config_s3Bucket --output-template-file packaged.yaml",
+    "sam:deploy": "cross-var sam deploy --stack-name $npm_package_name --template-file packaged.yaml --capabilities CAPABILITY_IAM",
+    "sam:run-local": "sam build --manifest package.json && sam local start-api",
+    "build-and-deploy": "npm run sam:build && npm run sam:package && npm run sam:deploy",
+    "test-build-and-deploy": "npm run coverage && npm run build-and-deploy",
+    "delete-stack": "cross-var aws cloudformation delete-stack --stack-name $npm_package_name && cross-var echo \"Deleting '$npm_package_name' stack, this may take a few minutes...\"",
+    "apiurl": "cross-var aws cloudformation describe-stacks --stack-name $npm_package_name --query \"Stacks[0].Outputs[?OutputKey=='SimpleLambdaApi'].OutputValue\" --output text"
+  },
+  "nyc": {
+    "check-coverage": true,
+    "exclude": "tests/**",
+    "reporter": [
+      "text",
+      "html"
+    ],
+    "branches": 80,
+    "functions": 80,
+    "lines": 90,
+    "statements": 80
+  },
+  "eslintConfig": {
+    "env": {
+      "jasmine": true
+    },
+    "parserOptions": {
+      "ecmaVersion": 2017,
+      "sourceType": "module",
+      "ecmaFeatures": {
+        "jsx": true
+      }
+    },
+    "rules": {
+      "no-mixed-spaces-and-tabs": 1,
+      "semi": "error",
+      "no-console": 0
+    },
+    "plugins": [
+      "security",
+      "jsdoc",
+      "mocha"
+    ],
+    "extends": [
+      "eslint:recommended",
+      "plugin:node/recommended",
+      "plugin:security/recommended"
+    ]
+  },
+  "dependencies": {
+    "lambda-log": "^2.3.0"
+  },
+  "devDependencies": {
+    "aws-sdk": "^2.463.0",
+    "chai": "^4.2.0",
+    "chai-http": "^4.3.0",
+    "cross-var-no-babel": "^1.2.0",
+    "commander": "^3.0.0",
+    "eslint": "^5.16.0",
+    "eslint-plugin-jsdoc": "^7.0.2",
+    "eslint-plugin-mocha": "^5.3.0",
+    "eslint-plugin-node": "^9.1.0",
+    "eslint-plugin-security": "^1.4.0",
+    "jsdoc": "^3.6.2",
+    "mocha": "^6.1.4",
+    "nyc": "^14.1.1"
+  }
+}
